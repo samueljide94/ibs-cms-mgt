@@ -14,7 +14,122 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      client_credentials: {
+        Row: {
+          client_id: string
+          created_at: string
+          credential_type: Database["public"]["Enums"]["credential_type"]
+          environment: Database["public"]["Enums"]["environment_type"]
+          hostname: string | null
+          id: string
+          ip_address: string | null
+          label: string | null
+          notes: string | null
+          password: string | null
+          port: string | null
+          updated_at: string
+          url: string | null
+          username: string | null
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          credential_type?: Database["public"]["Enums"]["credential_type"]
+          environment?: Database["public"]["Enums"]["environment_type"]
+          hostname?: string | null
+          id?: string
+          ip_address?: string | null
+          label?: string | null
+          notes?: string | null
+          password?: string | null
+          port?: string | null
+          updated_at?: string
+          url?: string | null
+          username?: string | null
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          credential_type?: Database["public"]["Enums"]["credential_type"]
+          environment?: Database["public"]["Enums"]["environment_type"]
+          hostname?: string | null
+          id?: string
+          ip_address?: string | null
+          label?: string | null
+          notes?: string | null
+          password?: string | null
+          port?: string | null
+          updated_at?: string
+          url?: string | null
+          username?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_credentials_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clients: {
+        Row: {
+          code: string | null
+          created_at: string
+          id: string
+          name: string
+          notes: string | null
+          updated_at: string
+        }
+        Insert: {
+          code?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          notes?: string | null
+          updated_at?: string
+        }
+        Update: {
+          code?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          email: string | null
+          id: string
+          role: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          id?: string
+          role?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          id?: string
+          role?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +138,14 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      credential_type:
+        | "rdp"
+        | "vpn"
+        | "server"
+        | "database"
+        | "portal"
+        | "other"
+      environment_type: "production" | "test" | "dr" | "portal"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +272,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      credential_type: ["rdp", "vpn", "server", "database", "portal", "other"],
+      environment_type: ["production", "test", "dr", "portal"],
+    },
   },
 } as const

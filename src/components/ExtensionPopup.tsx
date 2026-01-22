@@ -1,38 +1,25 @@
-import { useState } from "react";
-import { LoginScreen } from "@/components/LoginScreen";
-import { SearchScreen } from "@/components/SearchScreen";
-import { AuthState } from "@/types/client";
+import { AuthScreen } from "@/components/AuthScreen";
+import { DashboardScreen } from "@/components/DashboardScreen";
+import { useAuth } from "@/hooks/useAuth";
+import { Loader2 } from "lucide-react";
 
 export const ExtensionPopup = () => {
-  const [auth, setAuth] = useState<AuthState>({
-    isAuthenticated: false,
-    user: null,
-  });
+  const { user, loading } = useAuth();
 
-  const handleLogin = (username: string) => {
-    setAuth({
-      isAuthenticated: true,
-      user: { username, role: "support" },
-    });
-  };
-
-  const handleLogout = () => {
-    setAuth({
-      isAuthenticated: false,
-      user: null,
-    });
-  };
+  if (loading) {
+    return (
+      <div className="w-[360px] h-[540px] bg-background rounded-2xl shadow-2xl overflow-hidden border border-border/50 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 text-primary animate-spin mx-auto mb-3" />
+          <p className="text-sm text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-[360px] h-[540px] bg-background rounded-2xl shadow-2xl overflow-hidden border border-border/50">
-      {!auth.isAuthenticated ? (
-        <LoginScreen onLogin={handleLogin} />
-      ) : (
-        <SearchScreen
-          username={auth.user?.username || "User"}
-          onLogout={handleLogout}
-        />
-      )}
+      {!user ? <AuthScreen /> : <DashboardScreen />}
     </div>
   );
 };
