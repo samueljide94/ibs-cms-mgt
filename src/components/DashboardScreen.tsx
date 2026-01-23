@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ClientDetailCard } from "@/components/ClientDetailCard";
 import { useSearchClients, useAllClients } from "@/hooks/useClients";
+import { useSimplexCredentials } from "@/hooks/useSimplexCredentials";
 import { useAuth } from "@/hooks/useAuth";
 import {
   Search,
@@ -11,15 +12,20 @@ import {
   Building2,
   Sparkles,
   Database,
+  Shield,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 
 export const DashboardScreen = () => {
   const { user, signOut } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [activeSearch, setActiveSearch] = useState("");
+  const [showSimplex, setShowSimplex] = useState(false);
 
-  const { data: searchResult, isLoading: isSearching, isError } = useSearchClients(activeSearch);
+  const { data: searchResult, isLoading: isSearching } = useSearchClients(activeSearch);
   const { data: allClients } = useAllClients();
+  const { data: simplexData } = useSimplexCredentials();
 
   const handleSearch = useCallback(() => {
     if (searchTerm.trim()) {
@@ -40,6 +46,11 @@ export const DashboardScreen = () => {
 
   const displayName = user?.email?.split("@")[0] || "User";
   const hasSearched = activeSearch.length > 0;
+
+  // Filter out Simplex from client list for regular search
+  const otherClients = allClients?.filter(
+    (c) => c.code !== "SIMPLEX" && !c.name.toLowerCase().includes("simplex")
+  );
 
   return (
     <div className="min-h-full flex flex-col bg-background">
@@ -91,24 +102,58 @@ export const DashboardScreen = () => {
 
       {/* Content Area */}
       <div className="flex-1 overflow-auto">
+        {/* Simplex Company Credentials - Always visible when not searching */}
+        {!hasSearched && simplexData && (
+          <div className="p-4 animate-fade-in">
+            <button
+              onClick={() => setShowSimplex(!showSimplex)}
+              className="w-full flex items-center justify-between p-3 rounded-lg bg-primary/10 border border-primary/20 hover:bg-primary/15 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
+                  <Shield className="w-5 h-5 text-primary" />
+                </div>
+                <div className="text-left">
+                  <p className="font-semibold text-sm">Simplex Credentials</p>
+                  <p className="text-xs text-muted-foreground">
+                    Company VPN & Server Access
+                  </p>
+                </div>
+              </div>
+              {showSimplex ? (
+                <ChevronUp className="w-5 h-5 text-primary" />
+              ) : (
+                <ChevronDown className="w-5 h-5 text-primary" />
+              )}
+            </button>
+
+            {showSimplex && (
+              <div className="mt-3 animate-fade-in">
+                <ClientDetailCard client={simplexData} />
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Search Prompt or Quick Access */}
         {!hasSearched && (
-          <div className="p-6 text-center animate-fade-in">
+          <div className="p-6 pt-2 text-center animate-fade-in">
             <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-secondary flex items-center justify-center">
               <Search className="w-8 h-8 text-muted-foreground" />
             </div>
-            <h3 className="text-lg font-semibold mb-2">Search for Clients</h3>
+            <h3 className="text-lg font-semibold mb-2">Search Client Credentials</h3>
             <p className="text-sm text-muted-foreground max-w-[250px] mx-auto mb-4">
               Search by client name, IP address, or username
             </p>
             
-            {allClients && allClients.length > 0 && (
-              <div className="mt-6 space-y-2">
+            {otherClients && otherClients.length > 0 && (
+              <div className="mt-4 space-y-2">
                 <p className="text-xs text-muted-foreground font-medium flex items-center justify-center gap-1">
                   <Database className="w-3 h-3" />
-                  {allClients.length} clients in database
+                  {otherClients.length} supported clients
                 </p>
                 <div className="flex flex-wrap gap-2 justify-center">
-                  {allClients.slice(0, 5).map((client) => (
+                  {otherClients.slice(0, 6).map((client) => (
                     <button
                       key={client.id}
                       onClick={() => {
@@ -121,14 +166,6 @@ export const DashboardScreen = () => {
                     </button>
                   ))}
                 </div>
-              </div>
-            )}
-
-            {(!allClients || allClients.length === 0) && (
-              <div className="mt-6 p-4 rounded-lg bg-secondary/50">
-                <p className="text-xs text-muted-foreground">
-                  No clients in database yet. Add clients to get started.
-                </p>
               </div>
             )}
           </div>
