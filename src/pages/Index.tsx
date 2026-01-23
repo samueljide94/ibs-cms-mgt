@@ -15,10 +15,10 @@ const Index = () => {
           {/* Extension preview label */}
           <div className="text-center mb-6">
             <h1 className="text-2xl font-bold text-foreground mb-2">
-              🌟 Client Support Hub
+              🔐 Support Credentials Hub
             </h1>
             <p className="text-muted-foreground text-sm">
-              Secure Credential Management
+              Source of Truth for Client Access
             </p>
           </div>
 
