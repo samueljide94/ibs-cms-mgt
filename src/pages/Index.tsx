@@ -1,38 +1,29 @@
-import { ExtensionPopup } from "@/components/ExtensionPopup";
-import { AuthProvider } from "@/hooks/useAuth";
+import { AuthProvider, useAuth } from "@/hooks/useAuth";
+import { AuthScreen } from "@/components/AuthScreen";
+import { DashboardScreen } from "@/components/DashboardScreen";
+import { Loader2 } from "lucide-react";
+
+const AppContent = () => {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 text-primary animate-spin mx-auto mb-3" />
+          <p className="text-sm text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return !user ? <AuthScreen /> : <DashboardScreen />;
+};
 
 const Index = () => {
   return (
     <AuthProvider>
-      <div className="min-h-screen bg-gradient-to-br from-secondary via-background to-secondary/50 flex items-center justify-center p-6">
-        {/* Background decoration */}
-        <div className="fixed inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute -top-40 -right-40 w-80 h-80 gradient-primary rounded-full opacity-10 blur-3xl" />
-          <div className="absolute -bottom-40 -left-40 w-80 h-80 gradient-accent rounded-full opacity-10 blur-3xl" />
-        </div>
-
-        <div className="relative">
-          {/* Extension preview label */}
-          <div className="text-center mb-6">
-            <h1 className="text-2xl font-bold text-foreground mb-2">
-              🔐 Support Credentials Hub
-            </h1>
-            <p className="text-muted-foreground text-sm">
-              Source of Truth for Client Access
-            </p>
-          </div>
-
-          {/* The popup component */}
-          <ExtensionPopup />
-
-          {/* Instructions */}
-          <div className="mt-6 text-center max-w-[360px]">
-            <p className="text-xs text-muted-foreground">
-              Create an account or sign in to access client credentials
-            </p>
-          </div>
-        </div>
-      </div>
+      <AppContent />
     </AuthProvider>
   );
 };

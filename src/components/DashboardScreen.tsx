@@ -5,20 +5,23 @@ import { ClientDetailCard } from "@/components/ClientDetailCard";
 import { useSearchClients, useAllClients } from "@/hooks/useClients";
 import { useSimplexCredentials } from "@/hooks/useSimplexCredentials";
 import { useAuth } from "@/hooks/useAuth";
+import { useWebUser } from "@/hooks/useWebUser";
+import simplexLogo from "@/assets/simplex-logo.png";
 import {
   Search,
   LogOut,
   Loader2,
   Building2,
-  Sparkles,
   Database,
   Shield,
   ChevronDown,
   ChevronUp,
+  Bell,
 } from "lucide-react";
 
 export const DashboardScreen = () => {
-  const { user, signOut } = useAuth();
+  const { signOut } = useAuth();
+  const { data: webUser } = useWebUser();
   const [searchTerm, setSearchTerm] = useState("");
   const [activeSearch, setActiveSearch] = useState("");
   const [showSimplex, setShowSimplex] = useState(false);
@@ -44,78 +47,108 @@ export const DashboardScreen = () => {
     setActiveSearch("");
   };
 
-  const displayName = user?.email?.split("@")[0] || "User";
+  const displayName = webUser
+    ? webUser.nickname || `${webUser.first_name} ${webUser.last_name}`
+    : "User";
   const hasSearched = activeSearch.length > 0;
 
-  // Filter out Simplex from client list for regular search
-  const otherClients = allClients?.filter(
-    (c) => c.code !== "SIMPLEX" && !c.name.toLowerCase().includes("simplex")
-  );
-
   return (
-    <div className="min-h-full flex flex-col bg-background">
+    <div className="min-h-screen flex flex-col bg-background">
       {/* Header */}
-      <div className="gradient-primary px-4 py-4">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-primary-foreground" />
-            <span className="text-sm font-medium text-primary-foreground truncate max-w-[180px]">
-              {displayName}
-            </span>
-          </div>
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            onClick={signOut}
-            className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10"
-          >
-            <LogOut className="w-4 h-4" />
-          </Button>
-        </div>
+      <header className="bg-card border-b border-border sticky top-0 z-10">
+        <div className="max-w-5xl mx-auto px-4 py-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <img
+                src={simplexLogo}
+                alt="Simplex Business Solutions"
+                className="h-8 w-auto"
+              />
+              <div className="hidden sm:block">
+                <h1 className="text-sm font-semibold text-foreground">
+                  IBS Portal
+                </h1>
+                <p className="text-xs text-muted-foreground">
+                  Client Credential Hub
+                </p>
+              </div>
+            </div>
 
-        {/* Search Bar */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            type="text"
-            placeholder="Search clients, IPs, usernames..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            onKeyDown={handleKeyDown}
-            className="pl-10 pr-20 h-11 bg-card border-0 shadow-card"
-          />
-          <Button
-            variant="gradient"
-            size="sm"
-            onClick={handleSearch}
-            disabled={!searchTerm.trim() || isSearching}
-            className="absolute right-1 top-1/2 -translate-y-1/2 h-9"
-          >
-            {isSearching ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              "Search"
-            )}
-          </Button>
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="sm" className="relative">
+                <Bell className="w-4 h-4" />
+              </Button>
+              <div className="hidden sm:block text-right mr-2">
+                <p className="text-sm font-medium">{displayName}</p>
+                <p className="text-xs text-muted-foreground capitalize">
+                  {webUser?.position?.replace("_", " ") || "Team Member"}
+                </p>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={signOut}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                <LogOut className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Search Section */}
+      <div className="bg-primary py-6">
+        <div className="max-w-2xl mx-auto px-4">
+          <div className="text-center mb-4">
+            <h2 className="text-xl font-semibold text-primary-foreground">
+              Search Client Credentials
+            </h2>
+            <p className="text-primary-foreground/70 text-sm mt-1">
+              Find credentials by client name, code, IP, or hostname
+            </p>
+          </div>
+          <div className="relative">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+            <Input
+              type="text"
+              placeholder="Search clients, IPs, hostnames..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyDown={handleKeyDown}
+              className="pl-12 pr-24 h-12 bg-card border-0 shadow-lg text-base"
+            />
+            <Button
+              onClick={handleSearch}
+              disabled={!searchTerm.trim() || isSearching}
+              className="absolute right-1.5 top-1/2 -translate-y-1/2 h-9"
+            >
+              {isSearching ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                "Search"
+              )}
+            </Button>
+          </div>
         </div>
       </div>
 
       {/* Content Area */}
-      <div className="flex-1 overflow-auto">
+      <main className="flex-1 max-w-5xl mx-auto w-full px-4 py-6">
         {/* Simplex Company Credentials - Always visible when not searching */}
         {!hasSearched && simplexData && (
-          <div className="p-4 animate-fade-in">
+          <div className="mb-6 animate-fade-in">
             <button
               onClick={() => setShowSimplex(!showSimplex)}
-              className="w-full flex items-center justify-between p-3 rounded-lg bg-primary/10 border border-primary/20 hover:bg-primary/15 transition-colors"
+              className="w-full flex items-center justify-between p-4 rounded-lg bg-primary/5 border border-primary/20 hover:bg-primary/10 transition-colors"
             >
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
                   <Shield className="w-5 h-5 text-primary" />
                 </div>
                 <div className="text-left">
-                  <p className="font-semibold text-sm">Simplex Credentials</p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="font-semibold">Simplex Credentials</p>
+                  <p className="text-sm text-muted-foreground">
                     Company VPN & Server Access
                   </p>
                 </div>
@@ -128,51 +161,50 @@ export const DashboardScreen = () => {
             </button>
 
             {showSimplex && (
-              <div className="mt-3 animate-fade-in">
+              <div className="mt-4 animate-fade-in">
                 <ClientDetailCard client={simplexData} />
               </div>
             )}
           </div>
         )}
 
-        {/* Search Prompt or Quick Access */}
-        {!hasSearched && (
-          <div className="p-6 pt-2 text-center animate-fade-in">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-secondary flex items-center justify-center">
-              <Search className="w-8 h-8 text-muted-foreground" />
+        {/* Quick Access Clients */}
+        {!hasSearched && allClients && allClients.length > 0 && (
+          <div className="animate-fade-in">
+            <div className="flex items-center gap-2 mb-4">
+              <Database className="w-4 h-4 text-muted-foreground" />
+              <h3 className="text-sm font-medium text-muted-foreground">
+                Quick Access ({allClients.length} clients)
+              </h3>
             </div>
-            <h3 className="text-lg font-semibold mb-2">Search Client Credentials</h3>
-            <p className="text-sm text-muted-foreground max-w-[250px] mx-auto mb-4">
-              Search by client name, IP address, or username
-            </p>
-            
-            {otherClients && otherClients.length > 0 && (
-              <div className="mt-4 space-y-2">
-                <p className="text-xs text-muted-foreground font-medium flex items-center justify-center gap-1">
-                  <Database className="w-3 h-3" />
-                  {otherClients.length} supported clients
-                </p>
-                <div className="flex flex-wrap gap-2 justify-center">
-                  {otherClients.slice(0, 6).map((client) => (
-                    <button
-                      key={client.id}
-                      onClick={() => {
-                        setSearchTerm(client.name);
-                        setActiveSearch(client.name);
-                      }}
-                      className="px-3 py-1.5 text-xs bg-secondary hover:bg-secondary/80 rounded-full transition-colors truncate max-w-[120px]"
-                    >
-                      {client.name}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+              {allClients.slice(0, 12).map((client) => (
+                <button
+                  key={client.client_id}
+                  onClick={() => {
+                    setSearchTerm(client.client_name);
+                    setActiveSearch(client.client_name);
+                  }}
+                  className="p-3 rounded-lg bg-card border border-border hover:border-primary/50 hover:bg-muted/50 transition-all text-left"
+                >
+                  <div className="flex items-center gap-2">
+                    <Building2 className="w-4 h-4 text-primary" />
+                    <span className="text-sm font-medium truncate">
+                      {client.client_code}
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1 truncate">
+                    {client.client_name}
+                  </p>
+                </button>
+              ))}
+            </div>
           </div>
         )}
 
+        {/* Loading State */}
         {isSearching && (
-          <div className="p-6 text-center animate-fade-in">
+          <div className="py-12 text-center animate-fade-in">
             <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-primary/10 flex items-center justify-center">
               <Loader2 className="w-8 h-8 text-primary animate-spin" />
             </div>
@@ -183,8 +215,9 @@ export const DashboardScreen = () => {
           </div>
         )}
 
+        {/* No Results */}
         {hasSearched && !isSearching && !searchResult && (
-          <div className="p-6 text-center animate-fade-in">
+          <div className="py-12 text-center animate-fade-in">
             <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-destructive/10 flex items-center justify-center">
               <Building2 className="w-8 h-8 text-destructive" />
             </div>
@@ -198,25 +231,22 @@ export const DashboardScreen = () => {
           </div>
         )}
 
+        {/* Search Results */}
         {hasSearched && !isSearching && searchResult && (
-          <ClientDetailCard client={searchResult} />
+          <div className="animate-fade-in">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-medium text-muted-foreground">
+                Search Result
+              </h3>
+              <Button variant="ghost" size="sm" onClick={handleClear}>
+                <Search className="w-4 h-4 mr-2" />
+                New Search
+              </Button>
+            </div>
+            <ClientDetailCard client={searchResult} />
+          </div>
         )}
-      </div>
-
-      {/* Footer */}
-      {hasSearched && searchResult && (
-        <div className="p-3 bg-secondary/50 border-t border-border">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleClear}
-            className="w-full text-muted-foreground"
-          >
-            <Search className="w-4 h-4 mr-2" />
-            New Search
-          </Button>
-        </div>
-      )}
+      </main>
     </div>
   );
 };
