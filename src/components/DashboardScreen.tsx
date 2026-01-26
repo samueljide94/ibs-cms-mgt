@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ClientDetailCard } from "@/components/ClientDetailCard";
@@ -17,9 +18,11 @@ import {
   ChevronDown,
   ChevronUp,
   Bell,
+  Settings,
 } from "lucide-react";
 
 export const DashboardScreen = () => {
+  const navigate = useNavigate();
   const { signOut } = useAuth();
   const { data: webUser } = useWebUser();
   const [searchTerm, setSearchTerm] = useState("");
@@ -77,6 +80,14 @@ export const DashboardScreen = () => {
             <div className="flex items-center gap-2">
               <Button variant="ghost" size="sm" className="relative">
                 <Bell className="w-4 h-4" />
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => navigate("/settings")}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                <Settings className="w-4 h-4" />
               </Button>
               <div className="hidden sm:block text-right mr-2">
                 <p className="text-sm font-medium">{displayName}</p>

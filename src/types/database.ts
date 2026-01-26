@@ -1,11 +1,17 @@
 // Database types for IBS Portal
 
 export type AppRole = 'Admin' | 'Manager' | 'Viewer';
-export type PositionType = 'MD' | 'Management' | 'QA' | 'HOD' | 'DevOps' | 'Engineer' | 'Senior' | 'Junior' | 'Trainee' | 'NYSC' | 'IT_Swiss';
+export type PositionType = 'MD' | 'Management' | 'QA' | 'HOD' | 'DevOps' | 'Developer' | 'Engineer' | 'Senior' | 'Junior' | 'Trainee' | 'NYSC' | 'IT_Swiss';
 export type EnvironmentType = 'Production' | 'Test' | 'DR' | 'Development';
 
-// Positions that have restricted edit access
+// Positions that have restricted edit access (Junior, Trainee, NYSC, IT_Swiss cannot edit)
 export const RESTRICTED_POSITIONS: PositionType[] = ['Junior', 'Trainee', 'NYSC', 'IT_Swiss'];
+
+// Positions that have edit rights (MD to Senior, plus Developer)
+export const EDIT_POSITIONS: PositionType[] = ['MD', 'Management', 'QA', 'HOD', 'DevOps', 'Developer', 'Engineer', 'Senior'];
+
+// Positions that have admin access (MD only - Admin role is separate)
+export const ADMIN_POSITIONS: PositionType[] = ['MD'];
 
 export interface WebUser {
   user_id: number;

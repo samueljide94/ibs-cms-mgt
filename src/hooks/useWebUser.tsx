@@ -1,7 +1,6 @@
-import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { WebUser, UserRole, AppRole, RESTRICTED_POSITIONS } from "@/types/database";
+import { WebUser, UserRole, RESTRICTED_POSITIONS, ADMIN_POSITIONS, EDIT_POSITIONS } from "@/types/database";
 import { useAuth } from "./useAuth";
 
 export const useWebUser = () => {
@@ -45,19 +44,31 @@ export const useUserRoles = () => {
   });
 };
 
+// Check if user has Admin role OR is in MD position
 export const useIsAdmin = () => {
+  const { data: webUser } = useWebUser();
   const { data: roles } = useUserRoles();
-  return roles?.some(r => r.role === 'Admin') ?? false;
+  
+  // Admin role explicitly assigned
+  const hasAdminRole = roles?.some(r => r.role === 'Admin') ?? false;
+  
+  // MD position automatically gets admin access
+  const isMD = webUser?.position === 'MD';
+  
+  return hasAdminRole || isMD;
 };
 
+// Check if user can edit (MD to Senior, plus Developer)
 export const useCanEdit = () => {
   const { data: webUser } = useWebUser();
   const isAdmin = useIsAdmin();
   
+  // Admins can always edit
   if (isAdmin) return true;
   if (!webUser) return false;
   
-  return !RESTRICTED_POSITIONS.includes(webUser.position);
+  // Check if user is in an edit-allowed position
+  return EDIT_POSITIONS.includes(webUser.position);
 };
 
 export const useUpdateNickname = () => {
