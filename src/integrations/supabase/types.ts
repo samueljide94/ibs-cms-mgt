@@ -896,6 +896,7 @@ export type Database = {
         | "QA"
         | "HOD"
         | "DevOps"
+        | "Developer"
         | "Engineer"
         | "Senior"
         | "Junior"
@@ -1038,6 +1039,7 @@ export const Constants = {
         "QA",
         "HOD",
         "DevOps",
+        "Developer",
         "Engineer",
         "Senior",
         "Junior",
