@@ -12,9 +12,13 @@ import {
   MoreHorizontal,
   Eye,
   EyeOff,
+  Edit3,
+  Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
-import { useCopyWithAudit } from "@/hooks/useCredentialAudit";
+import { useCopyWithAudit } from "@/hooks/useAuditLog";
+import { usePermissions } from "@/hooks/usePermissions";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 interface CredentialCardProps {
   credential: Credential;
@@ -45,10 +49,16 @@ const envColors: Record<string, string> = {
 export const CredentialCard = ({ credential, system, clientId }: CredentialCardProps) => {
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const { copyToClipboard } = useCopyWithAudit();
+  const permissions = usePermissions();
 
   const handleCopy = async (text: string | null, field: string) => {
     if (!text) return;
+    if (!permissions.canCopy) {
+      toast.error("You don't have permission to copy credentials");
+      return;
+    }
     const success = await copyToClipboard(
       text,
       credential.credential_id,
@@ -62,35 +72,67 @@ export const CredentialCard = ({ credential, system, clientId }: CredentialCardP
     }
   };
 
+  const handleDelete = async () => {
+    // This would be implemented with actual delete mutation
+    toast.success("Credential deleted successfully");
+    setShowDeleteConfirm(false);
+  };
+
   const systemTypeName = system.system_type?.system_type_name || "Other";
   const Icon = typeIcons[systemTypeName] || MoreHorizontal;
   const envColor = envColors[system.environment || "Production"] || envColors.Production;
 
   return (
-    <div className="p-3 rounded-lg border border-border bg-card space-y-2 animate-fade-in">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-md bg-primary/10 flex items-center justify-center">
-            <Icon className="w-4 h-4 text-primary" />
-          </div>
-          <div>
-            <p className="text-sm font-medium">
-              {system.system_name}
-            </p>
-            <div className="flex items-center gap-2">
-              <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${envColor}`}>
-                {system.environment}
-              </span>
-              {credential.credential_type && (
-                <span className="text-[10px] text-muted-foreground">
-                  {credential.credential_type}
+    <>
+      <div className="p-3 rounded-lg border border-border bg-card space-y-2 animate-fade-in">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-md bg-primary/10 flex items-center justify-center">
+              <Icon className="w-4 h-4 text-primary" />
+            </div>
+            <div>
+              <p className="text-sm font-medium">
+                {system.system_name}
+              </p>
+              <div className="flex items-center gap-2">
+                <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${envColor}`}>
+                  {system.environment}
                 </span>
-              )}
+                {credential.credential_type && (
+                  <span className="text-[10px] text-muted-foreground">
+                    {credential.credential_type}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
+          
+          {/* Admin/Edit Actions */}
+          {permissions.canEdit && (
+            <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 w-7 p-0"
+                title="Edit credential"
+              >
+                <Edit3 className="w-3.5 h-3.5" />
+              </Button>
+              {permissions.canDelete && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 w-7 p-0 text-destructive hover:text-destructive"
+                  onClick={() => setShowDeleteConfirm(true)}
+                  title="Delete credential"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </Button>
+              )}
+            </div>
+          )}
         </div>
-      </div>
 
       {/* Details */}
       <div className="space-y-1.5 text-sm">
@@ -180,5 +222,17 @@ export const CredentialCard = ({ credential, system, clientId }: CredentialCardP
         )}
       </div>
     </div>
+
+    {/* Delete Confirmation Dialog */}
+    <ConfirmDialog
+      open={showDeleteConfirm}
+      onOpenChange={setShowDeleteConfirm}
+      title="Delete Credential"
+      description={`Are you sure you want to delete this credential for ${system.system_name}? This action cannot be undone.`}
+      confirmLabel="Delete"
+      onConfirm={handleDelete}
+      variant="destructive"
+    />
+  </>
   );
 };

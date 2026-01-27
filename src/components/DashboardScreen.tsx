@@ -1,12 +1,17 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ClientDetailCard } from "@/components/ClientDetailCard";
+import { NotificationBell } from "@/components/NotificationBell";
+import { AuditTrailPanel } from "@/components/AuditTrailPanel";
 import { useSearchClients, useAllClients } from "@/hooks/useClients";
 import { useSimplexCredentials } from "@/hooks/useSimplexCredentials";
 import { useAuth } from "@/hooks/useAuth";
 import { useWebUser } from "@/hooks/useWebUser";
+import { usePermissions } from "@/hooks/usePermissions";
+import { useAuditLog } from "@/hooks/useAuditLog";
+import { useSendNotification } from "@/hooks/useNotifications";
 import simplexLogo from "@/assets/simplex-logo.png";
 import {
   Search,
@@ -17,14 +22,17 @@ import {
   Shield,
   ChevronDown,
   ChevronUp,
-  Bell,
   Settings,
+  Plus,
 } from "lucide-react";
 
 export const DashboardScreen = () => {
   const navigate = useNavigate();
   const { signOut } = useAuth();
   const { data: webUser } = useWebUser();
+  const permissions = usePermissions();
+  const auditLog = useAuditLog();
+  const sendNotification = useSendNotification();
   const [searchTerm, setSearchTerm] = useState("");
   const [activeSearch, setActiveSearch] = useState("");
   const [showSimplex, setShowSimplex] = useState(false);
@@ -32,6 +40,16 @@ export const DashboardScreen = () => {
   const { data: searchResult, isLoading: isSearching } = useSearchClients(activeSearch);
   const { data: allClients } = useAllClients();
   const { data: simplexData } = useSimplexCredentials();
+
+  // Log login on mount
+  useEffect(() => {
+    if (webUser) {
+      auditLog.mutate({
+        action: 'LOGIN',
+        details: 'User logged in',
+      });
+    }
+  }, [webUser?.user_id]);
 
   const handleSearch = useCallback(() => {
     if (searchTerm.trim()) {
@@ -48,6 +66,14 @@ export const DashboardScreen = () => {
   const handleClear = () => {
     setSearchTerm("");
     setActiveSearch("");
+  };
+
+  const handleSignOut = async () => {
+    auditLog.mutate({
+      action: 'LOGOUT',
+      details: 'User logged out',
+    });
+    signOut();
   };
 
   const displayName = webUser
@@ -78,9 +104,8 @@ export const DashboardScreen = () => {
             </div>
 
             <div className="flex items-center gap-2">
-              <Button variant="ghost" size="sm" className="relative">
-                <Bell className="w-4 h-4" />
-              </Button>
+              <NotificationBell />
+              <AuditTrailPanel />
               <Button 
                 variant="ghost" 
                 size="sm"
@@ -91,14 +116,21 @@ export const DashboardScreen = () => {
               </Button>
               <div className="hidden sm:block text-right mr-2">
                 <p className="text-sm font-medium">{displayName}</p>
-                <p className="text-xs text-muted-foreground capitalize">
-                  {webUser?.position?.replace("_", " ") || "Team Member"}
-                </p>
+                <div className="flex items-center gap-1 justify-end">
+                  <p className="text-xs text-muted-foreground capitalize">
+                    {webUser?.position?.replace("_", " ") || "Team Member"}
+                  </p>
+                  {permissions.isAdmin && (
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary font-medium">
+                      Admin
+                    </span>
+                  )}
+                </div>
               </div>
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={signOut}
+                onClick={handleSignOut}
                 className="text-muted-foreground hover:text-foreground"
               >
                 <LogOut className="w-4 h-4" />
