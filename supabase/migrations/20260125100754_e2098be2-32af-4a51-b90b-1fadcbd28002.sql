@@ -1014,15 +1014,15 @@ ALTER PUBLICATION supabase_realtime ADD TABLE public.notifications;
 -- 15.1: SAMPLE CLIENTS
 -- ============================================
 
-INSERT INTO public.clients (client_code, client_name, industry, division, notes, status) 
+INSERT INTO public.clients (client_code, client_name, industry, division, notes, status)
 VALUES
     ('SIMPLEX', 'Simplex Business Solutions', 'Technology', 'Internal', 'Company VPN and server access', 'ACTIVE'),
     ('AIICO', 'AIICO Asset Management', 'Financial Services', 'Asset Management', NULL, 'ACTIVE'),
     ('COWRY', 'COWRY Asset Management', 'Financial Services', 'Wealth Management', NULL, 'ACTIVE'),
     ('CITI', 'CITI Trust', 'Banking', 'Corporate Banking', NULL, 'ACTIVE'),
     ('ANCHORIA', 'Anchoria Asset Management', 'Financial Services', 'Investment Management', NULL, 'ACTIVE'),
-    ('FCMB', 'FCMB Trustees', 'Banking', 'Trust Services', NULL, 'ACTIVE'),
-    ('STANBIC', 'Stanbic IBTC Asset Management', 'Financial Services', 'Asset Management', NULL, 'ACTIVE'),
+    ('FCMB', 'FCMB Trustees', 'Banking', 'Trust Services', NULL, 'INACTIVE'),
+    ('STANBIC', 'Stanbic IBTC Asset Management', 'Financial Services', 'Asset Management', NULL, 'INACTIVE'),
     ('CORALSTONE', 'Coralstone Capital', 'Financial Services', 'Investment', NULL, 'ACTIVE'),
     ('UTICA', 'Utica Capital', 'Financial Services', 'Asset Management', NULL, 'ACTIVE'),
     ('TOTAL', 'Total Nigeria', 'Energy', 'Pension & Investment', NULL, 'ACTIVE'),

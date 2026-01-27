@@ -66,7 +66,12 @@ export const AuthScreen = () => {
       if (mode === "login") {
         const { error } = await signIn(email, password);
         if (error) {
-          setError(error.message);
+          // Handle rate limiting specifically
+          if (error.message.includes('rate limit') || error.message.includes('too many requests')) {
+            setError('Too many login attempts. Please wait a few minutes before trying again.');
+          } else {
+            setError(error.message);
+          }
         }
       } else {
         // Validate signup fields
@@ -91,7 +96,12 @@ export const AuthScreen = () => {
 
         const { error: signUpError } = await signUp(email, password);
         if (signUpError) {
-          setError(signUpError.message);
+          // Handle rate limiting specifically for signup
+          if (signUpError.message.includes('rate limit') || signUpError.message.includes('too many requests')) {
+            setError('Too many signup attempts. Please wait a few minutes before trying again.');
+          } else {
+            setError(signUpError.message);
+          }
           setIsLoading(false);
           return;
         }

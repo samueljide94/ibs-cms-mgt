@@ -36,6 +36,7 @@ export const DashboardScreen = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeSearch, setActiveSearch] = useState("");
   const [showSimplex, setShowSimplex] = useState(false);
+  const [showInactiveClients, setShowInactiveClients] = useState(false);
 
   const { data: searchResult, isLoading: isSearching } = useSearchClients(activeSearch);
   const { data: allClients } = useAllClients();
@@ -214,27 +215,51 @@ export const DashboardScreen = () => {
         {/* Quick Access Clients */}
         {!hasSearched && allClients && allClients.length > 0 && (
           <div className="animate-fade-in">
-            <div className="flex items-center gap-2 mb-4">
-              <Database className="w-4 h-4 text-muted-foreground" />
-              <h3 className="text-sm font-medium text-muted-foreground">
-                Quick Access ({allClients.length} clients)
-              </h3>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <Database className="w-4 h-4 text-muted-foreground" />
+                <h3 className="text-sm font-medium text-muted-foreground">
+                  Quick Access ({allClients.filter(client => showInactiveClients || client.status === 'ACTIVE').length} clients)
+                </h3>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowInactiveClients(!showInactiveClients)}
+                className="text-xs"
+              >
+                {showInactiveClients ? 'Hide Inactive' : 'Show Inactive'}
+              </Button>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-              {allClients.slice(0, 12).map((client) => (
+              {allClients
+                .filter(client => showInactiveClients || client.status === 'ACTIVE')
+                .slice(0, 12)
+                .map((client) => (
                 <button
                   key={client.client_id}
                   onClick={() => {
                     setSearchTerm(client.client_name);
                     setActiveSearch(client.client_name);
                   }}
-                  className="p-3 rounded-lg bg-card border border-border hover:border-primary/50 hover:bg-muted/50 transition-all text-left"
+                  className={`p-3 rounded-lg border transition-all text-left ${
+                    client.status === 'ACTIVE'
+                      ? 'bg-card border-border hover:border-primary/50 hover:bg-muted/50'
+                      : 'bg-muted/30 border-muted-foreground/20 opacity-75'
+                  }`}
                 >
                   <div className="flex items-center gap-2">
-                    <Building2 className="w-4 h-4 text-primary" />
+                    <Building2 className={`w-4 h-4 ${
+                      client.status === 'ACTIVE' ? 'text-primary' : 'text-muted-foreground'
+                    }`} />
                     <span className="text-sm font-medium truncate">
                       {client.client_code}
                     </span>
+                    {client.status === 'INACTIVE' && (
+                      <span className="text-[10px] px-1 py-0.5 rounded bg-muted text-muted-foreground">
+                        Inactive
+                      </span>
+                    )}
                   </div>
                   <p className="text-xs text-muted-foreground mt-1 truncate">
                     {client.client_name}
