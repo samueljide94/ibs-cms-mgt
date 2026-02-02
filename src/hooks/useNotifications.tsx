@@ -25,6 +25,26 @@ interface CreateNotificationParams {
   notify_admins?: boolean;
 }
 
+// Input validation for notification content
+const validateNotificationInput = (params: CreateNotificationParams): void => {
+  if (!params.title || params.title.trim().length === 0) {
+    throw new Error('Notification title is required');
+  }
+  if (params.title.length > 200) {
+    throw new Error('Notification title must be under 200 characters');
+  }
+  if (params.message && params.message.length > 1000) {
+    throw new Error('Notification message must be under 1000 characters');
+  }
+};
+
+// Sanitize text to remove potentially dangerous content
+const sanitizeText = (text: string): string => {
+  return text
+    .replace(/[<>]/g, '') // Remove angle brackets
+    .trim();
+};
+
 // Hook to send notifications
 export const useSendNotification = () => {
   const queryClient = useQueryClient();
@@ -32,6 +52,13 @@ export const useSendNotification = () => {
 
   return useMutation({
     mutationFn: async (params: CreateNotificationParams) => {
+      // Validate input before processing
+      validateNotificationInput(params);
+      
+      // Sanitize content
+      const sanitizedTitle = sanitizeText(params.title);
+      const sanitizedMessage = params.message ? sanitizeText(params.message) : undefined;
+      
       const notifications = [];
       
       // If specific users are provided
@@ -40,8 +67,8 @@ export const useSendNotification = () => {
           notifications.push({
             user_id: userId,
             type: params.type,
-            title: params.title,
-            message: params.message,
+            title: sanitizedTitle,
+            message: sanitizedMessage,
             reference_type: params.reference_type,
             reference_id: params.reference_id,
           });
@@ -73,8 +100,8 @@ export const useSendNotification = () => {
             notifications.push({
               user_id: userId,
               type: params.type,
-              title: params.title,
-              message: params.message,
+              title: sanitizedTitle,
+              message: sanitizedMessage,
               reference_type: params.reference_type,
               reference_id: params.reference_id,
             });
