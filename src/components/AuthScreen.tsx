@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/select";
 import { AlertCircle, UserPlus, LogIn, Calendar } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/clientWithFallback";
 import simplexLogo from "@/assets/simplex-logo.png";
 import { PositionType } from "@/types/database";
 

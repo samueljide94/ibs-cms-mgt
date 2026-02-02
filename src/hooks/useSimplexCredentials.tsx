@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/clientWithFallback";
 import { ClientWithSystems, Client, ClientSystem, Credential } from "@/types/database";
 
 export const useSimplexCredentials = () => {

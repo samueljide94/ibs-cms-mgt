@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/clientWithFallback";
 import { useWebUser } from "./useWebUser";
 import { Notification } from "@/types/database";
 import { useEffect } from "react";
